@@ -1,0 +1,35 @@
+# Set the base image
+FROM node:7.8.0-alpine
+
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# Install app dependencies
+RUN apk update && apk upgrade
+
+# ONBUILD COPY . /usr/src/app/
+ONBUILD RUN npm install
+# COPY . /usr/src/app/
+# RUN npm install
+
+# Build app
+ONBUILD RUN npm run build
+
+# Remove the default Nginx configuration file
+RUN rm -v /etc/nginx/nginx.conf
+
+# Copy a configuration file from the current directory
+ADD nginx.conf /etc/nginx
+
+ADD web /usr/src/app
+ADD web /var/www/html
+
+# Append "daemon off;" to the beginning of the configuration
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+# Expose ports
+EXPOSE 90
+
+# start command
+CMD [ "npm", "start" ]
